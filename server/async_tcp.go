@@ -14,6 +14,9 @@ var con_clients int = 0
 func RunAsyncTCPServer() error {
 	log.Println("starting an asynchronous TCP server on", config.Host, config.Port)
 
+	// Start the background cleanup routine for expired keys
+	core.StartCleanupRoutine()
+
 	max_clients := 20000
 
 	// Create EPOLL Event Objects to hold events

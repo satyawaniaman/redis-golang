@@ -1,7 +1,8 @@
 [![Star this repo](https://img.shields.io/badge/⭐_Star-This_repo-lightgrey?style=flat)](https://github.com/satyawaniaman/redis-golang)
 [![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)](https://golang.org/)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat)](https://github.com/satyawaniaman/redis-golang/releases)
 
-# Redis Clone in Go
+# Redis Clone in Go v1.0.0
 
 A high-performance Redis-compatible server written in Go, featuring both **asynchronous** (epoll-based) and **synchronous** implementations. This project demonstrates advanced Go networking concepts including non-blocking I/O, event-driven architecture, and RESP protocol parsing.
 
@@ -11,7 +12,9 @@ A high-performance Redis-compatible server written in Go, featuring both **async
   - **Async Server**: Linux epoll-based event loop for maximum performance
   - **Sync Server**: Traditional goroutine-per-connection model for cross-platform compatibility
 - **RESP Protocol**: Full Redis Serialization Protocol support
-- **Core Redis Commands**: `PING`, `SET`, `GET`, `DEL`, `EXPIRE`, `TTL`
+- **Core Redis Commands**: `PING`, `SET`, `GET`, `DEL`, `TTL`
+- **Key Expiration**: Automatic cleanup of expired keys with background goroutines
+- **Multi-key Operations**: `DEL` command supports deleting multiple keys at once
 - **Docker Support**: Containerized deployment for Linux epoll functionality
 - **Cross-Platform**: Sync server runs natively on macOS, Windows, and Linux
 
@@ -75,16 +78,20 @@ A high-performance Redis-compatible server written in Go, featuring both **async
    redis-cli -h localhost -p 6379
    ```
 
-## 📋 Supported Commands
+## 📋 Supported Commands (v1.0.0)
 
 | Command | Description | Example |
 |---------|-------------|---------|
 | `PING` | Test server connectivity | `PING` → `PONG` |
-| `SET key value` | Store a key-value pair | `SET name "John"` → `OK` |
+| `SET key value [EX seconds]` | Store a key-value pair with optional expiration | `SET name "John" EX 60` → `OK` |
 | `GET key` | Retrieve value by key | `GET name` → `"John"` |
-| `DEL key` | Delete a key | `DEL name` → `(integer) 1` |
-| `EXPIRE key seconds` | Set TTL for a key | `EXPIRE name 60` → `(integer) 1` |
+| `DEL key [key ...]` | Delete one or more keys | `DEL name age` → `(integer) 2` |
 | `TTL key` | Check remaining TTL | `TTL name` → `(integer) 45` |
+
+### ✨ Key Features
+- **Automatic Expiration**: Keys with TTL are automatically cleaned up by background goroutines
+- **Multi-key Operations**: `DEL` command can delete multiple keys in a single operation
+- **SET with Expiration**: Use `SET key value EX seconds` to set a key with immediate expiration
 
 ## 🧪 Testing
 
@@ -98,21 +105,18 @@ redis-cli -h localhost -p 6379
 PONG
 > SET user:1 "Alice"
 OK
+> SET user:2 "Bob" EX 10
+OK
 > GET user:1
 "Alice"
-> EXPIRE user:1 30
-(integer) 1
+> GET user:2
+"Bob"
 > TTL user:1
-(integer) 27
-> DEL user:1
-(integer) 1
-```
-
-### Using the Go Test Client
-```bash
-# Run the included test client
-cd test_client
-go run main.go
+(integer) -1
+> TTL user:2
+(integer) 7
+> DEL user:1 user:2
+(integer) 2
 ```
 
 ### Using telnet (Manual RESP)
@@ -183,6 +187,27 @@ docker-compose logs
 ### Performance Comparison
 - **Async Server**: Handles 10,000+ concurrent connections efficiently
 - **Sync Server**: Good for moderate loads (hundreds of connections)
+
+## 🗺️ Roadmap
+
+### v1.1.0 - Testing & Quality (Next Release)
+- [ ] **Comprehensive Test Suite**
+  - Unit tests for all core functions
+  - Integration tests for client-server communication
+  - Benchmark tests vs real Redis
+  - Load testing with concurrent clients
+- [ ] **Adding Performance Benchmarks**
+### v1.2.0 - Data Persistence
+- [ ] **RDB Snapshots**: Save/load data to/from disk
+- [ ] **AOF (Append-Only File)**: Log all write operations
+- [ ] **Configurable persistence strategies**
+- [ ] **Data recovery mechanisms**
+
+### v1.3.0 - Extended Commands
+- [ ] **Numeric Operations**: `INCR`, `DECR`, `INCRBY`, `DECRBY`
+- [ ] **List Operations**: `LPUSH`, `RPUSH`, `LPOP`, `RPOP`, `LLEN`
+- [ ] **Hash Operations**: `HSET`, `HGET`, `HDEL`, `HKEYS`, `HVALS`
+- [ ] **Set Operations**: `SADD`, `SREM`, `SMEMBERS`, `SISMEMBER`
 
 ## 🎯 Learning Outcomes
 

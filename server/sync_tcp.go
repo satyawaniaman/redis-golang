@@ -47,6 +47,9 @@ func respond(cmd *core.RedisCmd, c io.ReadWriter) {
 func RunSyncTCPServer() {
 	log.Println("starting a synchronous TCP server on", config.Host, config.Port)
 
+	// Start the background cleanup routine for expired keys
+	core.StartCleanupRoutine()
+
 	var con_clients int = 0
 
 	// listening to the configured host:port
