@@ -1,0 +1,9 @@
+services:
+  redis-golang:
+    build: .
+    ports:
+      - "6379:6379"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=6379
+    restart: unless-stopped

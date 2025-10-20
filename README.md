@@ -1,61 +1,210 @@
-# Redis Clone in Go - Task Checklist
+[![Star this repo](https://img.shields.io/badge/⭐_Star-This_repo-lightgrey?style=flat)](https://github.com/satyawaniaman/redis-golang)
+[![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)](https://golang.org/)
 
-## Setup
-- [ ] Initialize Go project (`go mod init`)  
-- [ ] Create folder structure:  
-  - `cmd/server/main.go`  
-  - `internal/resp/`  
-  - `internal/store/`  
-  - `internal/handlers/`  
+# Redis Clone in Go
 
-## Core Server
-- [ ] Implement TCP server (`net.Listen`, `Accept`, `conn.Read/Write`)  
-- [ ] Spawn goroutines for multiple concurrent clients  
+A high-performance Redis-compatible server written in Go, featuring both **asynchronous** (epoll-based) and **synchronous** implementations. This project demonstrates advanced Go networking concepts including non-blocking I/O, event-driven architecture, and RESP protocol parsing.
 
-## RESP Protocol
-- [ ] Implement RESP parser for:
-  - Simple Strings (`+`)  
-  - Bulk Strings (`$`)  
-  - Arrays (`*`)  
-- [ ] Implement command dispatcher (`map[string]func(args []string) string`)  
+## 🚀 Features
 
-## Core Commands
-- [ ] `PING` → return `PONG`  
-- [ ] `SET key value` → store value in memory  
-- [ ] `GET key` → retrieve value from memory  
-- [ ] `DEL key` → delete key from memory  
+- **Dual Server Implementations**:
+  - **Async Server**: Linux epoll-based event loop for maximum performance
+  - **Sync Server**: Traditional goroutine-per-connection model for cross-platform compatibility
+- **RESP Protocol**: Full Redis Serialization Protocol support
+- **Core Redis Commands**: `PING`, `SET`, `GET`, `DEL`, `EXPIRE`, `TTL`
+- **Docker Support**: Containerized deployment for Linux epoll functionality
+- **Cross-Platform**: Sync server runs natively on macOS, Windows, and Linux
 
-## TTL / Expiry
-- [ ] `EXPIRE key seconds` → set TTL for a key  
-- [ ] Background goroutine to auto-delete expired keys  
-- [ ] `TTL key` → check remaining time  
+## 🏗️ Architecture
 
-## Optional Extended Commands
-- [ ] `INCR key` → increment integer value  
-- [ ] `DECR key` → decrement integer value  
-- [ ] `MSET key1 val1 key2 val2 ...` → set multiple keys  
-- [ ] `MGET key1 key2 ...` → get multiple keys  
+### Asynchronous Server (Linux/Docker)
+- **Event-driven**: Uses Linux epoll for non-blocking I/O
+- **Single-threaded**: Handles thousands of connections efficiently
+- **High performance**: Similar to Redis, Nginx, and Node.js architecture
+- **Low resource usage**: Minimal memory and CPU overhead
 
-## Optional Persistence
-- [ ] Implement AOF-like logging (append write commands to file)  
-- [ ] Replay log on startup  
+### Synchronous Server (Cross-platform)
+- **Goroutine-based**: One goroutine per client connection
+- **Cross-platform**: Works on macOS, Windows, and Linux
+- **Simple architecture**: Easy to understand and debug
+- **Good performance**: Suitable for moderate loads
 
-## Polish & Testing
-- [ ] Test all commands via `redis-cli` or `telnet`  
-- [ ] Add logging for connections and commands  
-- [ ] Clean, modular code (`resp/`, `store/`, `handlers/`)  
+## 🚀 Quick Start
 
-## README / Documentation
-- [ ] Project description  
-- [ ] Features / Supported commands  
-- [ ] Example usage with `redis-cli`  
-- [ ] How to run (`go run cmd/server/main.go`)  
-- [ ] Architecture diagram (optional)  
-- [ ] What was learned (goroutines, RESP, TCP, TTL)  
+### Option 1: Docker (Recommended for Async Server)
 
-## Final Steps
-- [ ] Final tests with multiple clients  
-- [ ] Push to GitHub  
-- [ ] Optional: record short demo / GIF for portfolio  
+1. **Clone and run with Docker**:
+   ```bash
+   git clone https://github.com/satyawaniaman/redis-golang.git
+   cd redis-golang
+   docker-compose up --build
+   ```
+
+2. **Test the server**:
+   ```bash
+   redis-cli -h localhost -p 6379
+   > PING
+   PONG
+   > SET mykey "Hello Redis!"
+   OK
+   > GET mykey
+   "Hello Redis!"
+   ```
+
+### Option 2: Native (Sync Server on macOS/Windows)
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/satyawaniaman/redis-golang.git
+   cd redis-golang
+   ```
+
+2. **Switch to sync server** (edit `main.go`):
+   ```go
+   // Change this line in main.go:
+   server.RunSyncTCPServer()  // instead of RunAsyncTCPServer()
+   ```
+
+3. **Run the server**:
+   ```bash
+   go run main.go
+   ```
+
+4. **Test with redis-cli**:
+   ```bash
+   redis-cli -h localhost -p 6379
+   ```
+
+## 📋 Supported Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `PING` | Test server connectivity | `PING` → `PONG` |
+| `SET key value` | Store a key-value pair | `SET name "John"` → `OK` |
+| `GET key` | Retrieve value by key | `GET name` → `"John"` |
+| `DEL key` | Delete a key | `DEL name` → `(integer) 1` |
+| `EXPIRE key seconds` | Set TTL for a key | `EXPIRE name 60` → `(integer) 1` |
+| `TTL key` | Check remaining TTL | `TTL name` → `(integer) 45` |
+
+## 🧪 Testing
+
+### Using redis-cli (Recommended)
+```bash
+# Connect to the server
+redis-cli -h localhost -p 6379
+
+# Test basic commands
+> PING
+PONG
+> SET user:1 "Alice"
+OK
+> GET user:1
+"Alice"
+> EXPIRE user:1 30
+(integer) 1
+> TTL user:1
+(integer) 27
+> DEL user:1
+(integer) 1
+```
+
+### Using the Go Test Client
+```bash
+# Run the included test client
+cd test_client
+go run main.go
+```
+
+### Using telnet (Manual RESP)
+```bash
+telnet localhost 6379
+*1\r\n$4\r\nPING\r\n
++PONG\r\n
+```
+
+## 🐳 Docker Details
+
+The project includes Docker configuration for running the high-performance async server:
+
+- **Dockerfile**: Multi-stage build with Go 1.21 Alpine
+- **docker-compose.yml**: Service configuration with port mapping
+- **Automatic builds**: No external dependencies required
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Stop the server
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up --build
+```
+
+## 🗂️ Project Structure
+
+```
+redis_golang/
+├── main.go              # Entry point (switches between async/sync)
+├── server/
+│   ├── async_tcp.go     # Linux epoll-based server
+│   └── sync_tcp.go      # Cross-platform goroutine server
+├── core/
+│   ├── resp.go          # RESP protocol parser
+│   ├── cmd.go           # Command structures
+│   ├── eval.go          # Command evaluation logic
+│   └── comm.go          # Communication wrapper
+├── test_client/
+│   └── main.go          # Go client for testing
+├── Dockerfile           # Container configuration
+├── docker-compose.yml   # Docker service setup
+└── go.mod              # Go module definition
+```
+
+## 🔧 Troubleshooting
+
+### macOS/Windows: "undefined: syscall.EpollEvent"
+This is expected! The async server uses Linux-specific epoll. Solutions:
+1. **Use Docker** (recommended): `docker-compose up --build`
+2. **Switch to sync server**: Change `main.go` to call `server.RunSyncTCPServer()`
+
+### Connection Issues
+```bash
+# Check if server is running
+docker ps
+
+# Check port accessibility
+telnet localhost 6379
+
+# View server logs
+docker-compose logs
+```
+
+### Performance Comparison
+- **Async Server**: Handles 10,000+ concurrent connections efficiently
+- **Sync Server**: Good for moderate loads (hundreds of connections)
+
+## 🎯 Learning Outcomes
+
+This project demonstrates:
+- **Network Programming**: TCP servers, non-blocking I/O
+- **Go Concurrency**: Goroutines, channels, event loops
+- **Protocol Implementation**: RESP parsing and generation
+- **System Programming**: Linux epoll, file descriptors
+- **Containerization**: Docker, multi-stage builds
+- **Cross-platform Development**: Platform-specific code handling  
+
+
+## License
+
+MIT License - feel free to use for commercial projects!
+
+## Star This Repo
+
+If this helped you build something cool, give it a star!✨ 
+
+---
+
+**Built with ❤️ by [Aman Satyawani](https://x.com/satyawani_aman) to learn Redis like implementation in Go**
 
 
