@@ -2,7 +2,7 @@
 [![Go](https://img.shields.io/badge/Go-00ADD8?style=flat&logo=go&logoColor=white)](https://golang.org/)
 [![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat)](https://github.com/satyawaniaman/redis-golang/releases)
 
-# Redis Clone in Go v1.0.0
+# Redis like cache implementation in Go v1.0.0
 
 A high-performance Redis-compatible server written in Go, featuring both **asynchronous** (epoll-based) and **synchronous** implementations. This project demonstrates advanced Go networking concepts including non-blocking I/O, event-driven architecture, and RESP protocol parsing.
 
